@@ -1,0 +1,15 @@
+installing node js
+-Download the .msi for Windows or .pkg for Mac from the NodeJS website.
+-node --version && npm --version
+-npm install --global npm@latest
+-npm install --global yo bower grunt-cli
+-yo --version && bower --version && grunt --version
+
+Install an AngularJS generator
+-npm install --global generator-angular@0.11.1
+-Along with using npm install directly, you can search for generators via the Yeoman
+ interactive menu. Run yo and select Install a generator to search for published generator
+
+
+Create a project folder
+-

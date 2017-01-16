@@ -1,0 +1,16 @@
+-Shell Script Security
+	*Shell scripts running as CGI scripts on a web server take input from the network.
+	*Shell scripts that read files and take actions based on their contents may take input from untrusted files.
+	*Shell scripts that perform web queries (with curl, for example) or other network requests may take input from untrusted servers or clients.
+
+
+-RapidDeploy 
+	*RapidDeploy is a powerful application release and deployment automation tool. Built for DevOps teams and enterprise continuous delivery, RapidDeploy delivers consistent high volume deployments so your teams can focus on developing.
+Release and deploy applications at pace without error or risk.
+	* For more information you can visit http://www.midvision.com/product
+
+-RapidDeploy plugin
+	*RapidDeploy project deploy: invoke a deployment task in RapidDeploy server as either a Build step or Post build step. Multiple deployments can be executed sequentially or parallel. You can check the result and the process logs in the Jenkins build output.
+
+-Capitomcat Plugin
+	*Capitomcat plugin deploy the WAR file to multiple remote Tomcat servers using Capitomcat which is Capistrano 3 recipe and library for Tomcat deployment.

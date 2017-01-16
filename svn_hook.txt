@@ -1,0 +1,30 @@
+Pre-commit hook for checking jira-id in message (perl)
+
+#!/usr/bin/perl -w  
+ use strict;  
+ my $repos  = $ARGV[0];  
+ my $txn   = $ARGV[1];  
+ my $svnlook = '/usr/bin/svnlook';  
+ my $require = '\[([A-Z_0-0]+-[0-9]+)\]';  
+ my $checklog = "N";  
+ foreach my $line (`$svnlook changed -t "$txn" "$repos"`)  
+ {  
+     chomp($line);  
+     if ($line !~ /^\s*(A|D|U|UU|_U)\s*(.+)$/)  
+     {  
+         die "!!Script Error!! Can't parse line: $line\n";  
+     } else {  
+         if ($2 =~ /^myproject.*$/)  
+         {  
+             $checklog = "Y";  
+         }  
+     }  
+ }  
+ if ($checklog ne "N")  
+ {    my $log = `$svnlook log -t $txn $repos`;  
+     if ($log =~ /$require/) {  
+         exit 0;  
+     } else {  
+         die "No JIRA issue specified. Commit aborted!\n";  
+     }  
+ }
