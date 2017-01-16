@@ -1,0 +1,433 @@
+Mock Objects
+
+we are adding Authorize.net files .
+Our Payment class
+-------------------------------------------------------------------------------------------------------------------------------------------
+<?php
+
+namespace phpUnitTutorial;
+
+class Payment
+{
+    const API_ID = 123456;
+    const TRANS_KEY = 'TRANSACTION KEY';
+
+    public function processPayment(array $paymentDetails)
+    {
+        $transaction = new \AuthorizeNetAIM(self::API_ID, self::TRANS_KEY);
+        $transaction->amount = $paymentDetails['amount'];
+        $transaction->card_num = $paymentDetails['card_num'];
+        $transaction->exp_date = $paymentDetails['exp_date'];
+
+        $response = $transaction->authorizeAndCapture();
+
+        if ($response->approved) {
+            return $this->savePayment($response->transaction_id);
+        } else {
+            throw new \Exception($response->error_message);
+        }
+    }
+
+    public function savePayment($transactionId)
+    {
+        // Logic for saving transaction ID to database or anywhere else would go in here
+        return true;
+    }
+}
+?>
+------------------------------------------------------------------------------------------------------------------------------------
+What needs to be tested
+
+The two most obvious outcomes are:
+
+    $response->approved is true, which triggers the call to ::savePayment() which returns true, and
+    $response->approved is false, which then throws \Exception().
+
+-------------------------------------------------------------------------------------------------------------------------------------
+Start with Empty Skeleton for your test
+
+<?php
+
+include(Payment.php);
+
+class PaymentTest extends PHPUnit_Framework_TestCase
+{
+    //
+}
+?>
+-------------------------------------------------------------------------------------------------------------------------------------
+Add first function
+
+<?php
+
+include(Payment.php);
+
+class PaymentTest extends PHPUnit_Framework_TestCase
+{
+    public function testProcessPaymentReturnsTrueOnSuccessfulPayment()
+    {
+        $paymentDetails = array(
+            'amount'   => 123.99,
+            'card_num' => '4111-1111-1111-1111',
+            'exp_date' => '03/2013',
+        );
+
+        $payment = new Payment();
+        $result = $payment->processPayment($paymentDetails);
+
+        $this->assertTrue($result);
+    }
+}
+?>
+-----------------------------------------------------------------------------------------------------------------------------------
+Issue with dependency as authorize.net is unavailable
+
+Dependency Injection
+
+public function processPayment(array $paymentDetails)
+{
+    $transaction = new \AuthorizeNetAIM(self::API_ID, self::TRANS_KEY);
+    $transaction->amount = $paymentDetails['amount'];
+    $transaction->card_num = $paymentDetails['card_num'];
+    $transaction->exp_date = $paymentDetails['exp_date'];
+
+    $response = $transaction->authorizeAndCapture();
+
+    if ($response->approved) {
+        return $this->savePayment($response->transaction_id);
+    }
+
+    throw new \Exception($response->error_message);
+}
+
+will become
+
+public function processPayment(\AuthorizeNetAIM $transaction, array $paymentDetails)
+{
+    $transaction->amount = $paymentDetails['amount'];
+    $transaction->card_num = $paymentDetails['card_num'];
+    $transaction->exp_date = $paymentDetails['exp_date'];
+
+    $response = $transaction->authorizeAndCapture();
+
+    if ($response->approved) {
+        return $this->savePayment($response->transaction_id);
+    }
+
+    throw new \Exception($response->error_message);
+}
+
+Any class that extends \AuthorizeNetAIM will pass an is_a() check.
+
+how would we pass an object that passes this check? 
+
+It would need to pass certain requirements:
+
+    Has all the methods your code is expecting, and
+    Any methods that cause problems in your code (like authorizeAndCapture()) should be changed to make them safe for your tests.
+
+
+but it has drawback of extending multiple classes 
+
+
+
+
+<?php
+
+namespace phpUnitTutorial\Test;
+
+use phpUnitTutorial\Payment;
+
+class PaymentTest extends \PHPUnit_Framework_TestCase
+{
+    public function testProcessPaymentReturnsTrueOnSuccessfulPayment()
+    {
+        $paymentDetails = array(
+            'amount'   => 123.99,
+            'card_num' => '4111-1111-1111-1111',
+            'exp_date' => '03/2013',
+        );
+
+        $payment = new Payment();
+
+        $authorizeNet = new \AuthorizeNetAIM($payment::API_ID, $payment::TRANS_KEY);
+
+        $result = $payment->processPayment($authorizeNet, $paymentDetails);
+
+        $this->assertTrue($result);
+    }
+}
+?>
+
+problem is it is still dependent on AuthorizeNetAIM
+
+
+getMock() method - it allows you to create a new class that passes our two major requirements above, 
+all on the fly. You do not need to create separate files for each class,
+you do not have to worry about maintaining a steadily-growing file structure.
+
+$authorizeNet = $this->getMock('\AuthorizeNetAIM', array(), array($payment::API_ID, $payment::TRANS_KEY));
+
+
+
+
+
+
+GetMock Parameters
+
+public function getMock($originalClassName, $methods = array(), array $arguments = array(), $mockClassName = '', $callOriginalConstructor = TRUE, $callOriginalClone = TRUE, $callAutoload = TRUE, $cloneArguments = TRUE)
+
+	
+	
+	
+GETMOCKBUILDER
+wrapper around the getMock();
+
+$authorizeNet = $this->getMockBuilder('\AuthorizeNetAIM')
+    ->setConstructorArgs(array($payment::API_ID, $payment::TRANS_KEY))
+    ->getMock();
+
+getMockBuilder() returns a mock object, which is simply an object that has behavior similar to the original object.
+
+var_dump($authorizeNet);
+
+class Mock_AuthorizeNetAIM_084f7b20#17 (12) {
+    private $__phpunit_invocationMocker => NULL
+    protected $_x_post_fields           => array(5) {
+        'version'        => string(3) "3.1"
+        'delim_char'     => string(1) ","
+        'delim_data'     => string(4) "TRUE"
+        'relay_response' => string(5) "FALSE"
+        'encap_char'     => string(1) "|"
+    }
+    private $_additional_line_items => array(0) {}
+    protected $_custom_fields       => array(0) {}
+    public $verify_x_fields         => bool(true)
+    private $_all_aim_fields        => array(61) {
+        [0]  => string(7) "address"
+        [1]  => string(18) "allow_partial_auth"
+        [2]  => string(6) "amount"
+        [3]  => string(9) "auth_code"
+        [4]  => string(24) "authentication_indicator"
+        [5]  => string(13) "bank_aba_code"
+        [6]  => string(14) "bank_acct_name"
+        [7]  => string(13) "bank_acct_num"
+        [8]  => string(14) "bank_acct_type"
+        [9]  => string(17) "bank_check_number"
+        [10] => string(9) "bank_name"
+        [11] => string(9) "card_code"
+        [12] => string(8) "card_num"
+        [13] => string(31) "cardholder_authentication_value"
+        [14] => string(4) "city"
+        [15] => string(7) "company"
+        [16] => string(7) "country"
+        [17] => string(7) "cust_id"
+        [18] => string(11) "customer_ip"
+        [19] => string(10) "delim_char"
+        [20] => string(10) "delim_data"
+        [21] => string(11) "description"
+        [22] => string(16) "duplicate_window"
+        [23] => string(4) "duty"
+        [24] => string(11) "echeck_type"
+        [25] => string(5) "email"
+        [26] => string(14) "email_customer"
+        [27] => string(10) "encap_char"
+        [28] => string(8) "exp_date"
+        [29] => string(3) "fax"
+        [30] => string(10) "first_name"
+        [31] => string(20) "footer_email_receipt"
+        [32] => string(7) "freight"
+        [33] => string(20) "header_email_receipt"
+        [34] => string(11) "invoice_num"
+        [35] => string(9) "last_name"
+        [36] => string(9) "line_item"
+        [37] => string(5) "login"
+        [38] => string(6) "method"
+        [39] => string(5) "phone"
+        [40] => string(6) "po_num"
+        [41] => string(17) "recurring_billing"
+        [42] => string(14) "relay_response"
+        [43] => string(15) "ship_to_address"
+        [44] => string(12) "ship_to_city"
+        [45] => string(15) "ship_to_company"
+        [46] => string(15) "ship_to_country"
+        [47] => string(18) "ship_to_first_name"
+        [48] => string(17) "ship_to_last_name"
+        [49] => string(13) "ship_to_state"
+        [50] => string(11) "ship_to_zip"
+        [51] => string(15) "split_tender_id"
+        [52] => string(5) "state"
+        [53] => string(3) "tax"
+        [54] => string(10) "tax_exempt"
+        [55] => string(12) "test_request"
+        [56] => string(8) "tran_key"
+        [57] => string(8) "trans_id"
+        [58] => string(4) "type"
+        [59] => string(7) "version"
+        [60] => string(3) "zip"
+    }
+    protected $_api_login       => int(123456)
+    protected $_transaction_key => string(15) "TRANSACTION KEY"
+    protected $_post_string     => NULL
+    public $VERIFY_PEER         => bool(true)
+    protected $_sandbox         => bool(true)
+    protected $_log_file        => bool(false)
+}
+
+It also matches the methods of the original class,
+	
+	print_r(get_class_methods($authorizeNet));
+	
+[0] => __clone
+[1] => authorizeAndCapture
+[2] => priorAuthCapture
+[3] => authorizeOnly
+[4] => void
+[5] => captureOnly
+[6] => credit
+[7] => __set
+[8] => setFields
+[9] => setCustomFields
+[10] => addLineItem
+[11] => setECheck
+[12] => setField
+[13] => setCustomField
+[14] => unsetField
+[15] => setSandbox
+[16] => setLogFile
+[17] => getPostString
+[18] => expects
+[19] => staticExpects
+[20] => __phpunit_getInvocationMocker
+[21] => __phpunit_getStaticInvocationMocker
+[22] => __phpunit_hasMatchers
+[23] => __phpunit_verify
+[24] => __phpunit_cleanup
+[25] => __construct
+	
+	
+One exception still there 
+var_dump($authorizeNet->authorizeAndCapture());
+
+returns NULL;
+
+Your mocked object’s methods all return NULL.
+These methods are considered stubs!
+
+
+
+
+STUB
+A stub method is a method that mimics the origin method in two ways - same name and same parameters accepted. 
+
+Here’s the original method from the \AuthorizeNetAIM class:
+
+public function authorizeAndCapture($amount = false, $card_num = false, $exp_date = false)
+{
+    ($amount ? $this->amount = $amount : null);
+    ($card_num ? $this->card_num = $card_num : null);
+    ($exp_date ? $this->exp_date = $exp_date : null);
+    $this->type = "AUTH_CAPTURE";
+    return $this->_sendRequest();
+}
+
+For now we can consider the stub method to be like this:
+
+public function authorizeAndCapture($amount = false, $card_num = false, $exp_date = false)
+{
+    return null;
+}
+
+All other methods in your mock object are also stubs, and they also return NULL.
+
+
+You can now override the value returned by a stub method from within your test.
+
+
+now after using getMockBuilder
+
+<?php
+
+include('payment.php');
+class PaymentTest extends \PHPUnit_Framework_TestCase
+{
+    public function testProcessPaymentReturnsTrueOnSuccessfulPayment()
+    {
+        $paymentDetails = array(
+            'amount'   => 123.99,
+            'card_num' => '4111-1111-1111-1111',
+            'exp_date' => '03/2013',
+        );
+
+        $payment = new Payment();
+
+        $authorizeNet = $this->getMockBuilder('\AuthorizeNetAIM')
+            ->setConstructorArgs(array($payment::API_ID, $payment::TRANS_KEY))
+            ->getMock();
+
+        $result = $payment->processPayment($authorizeNet, $paymentDetails);
+
+        $this->assertTrue($result);
+    }
+}
+?>
+
+
+
+
+
+
+
+
+
+fail $transaction->authorizeAndCapture();still returning null
+
+OVERRIDING STUB METHOD RETURN VALUES
+
+
+$authorizeNet->expects($this->once())
+    ->method('authorizeAndCapture')
+    ->will($this->returnValue('RETURN VALUE HERE!'));
+	
+	
+Running our test now will still fail, because authorizeAndCapture() is returning a string, when our code is expecting an object with an approved and transaction_id key. 	
+
+$response = new \stdClass();
+$response->approved = true;
+$response->transaction_id = 123;
+
+
+<?php
+include('payment.php);
+
+class PaymentTest extends \PHPUnit_Framework_TestCase
+{
+    public function testProcessPaymentReturnsTrueOnSuccessfulPayment()
+    {
+        $paymentDetails = array(
+            'amount'   => 123.99,
+            'card_num' => '4111-1111-1111-1111',
+            'exp_date' => '03/2013',
+        );
+
+        $payment = new Payment();
+
+        $response = new \stdClass();
+        $response->approved = true;
+        $response->transaction_id = 123;
+
+        $authorizeNet = $this->getMockBuilder('\AuthorizeNetAIM')
+            ->setConstructorArgs(array($payment::API_ID, $payment::TRANS_KEY))
+            ->getMock();
+
+        $authorizeNet->expects($this->once())
+            ->method('authorizeAndCapture')
+            ->will($this->returnValue($response));
+
+        $result = $payment->processPayment($authorizeNet, $paymentDetails);
+
+        $this->assertTrue($result);
+    }
+}
+
+Test Passed. :)

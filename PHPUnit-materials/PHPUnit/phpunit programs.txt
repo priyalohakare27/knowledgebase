@@ -1,0 +1,391 @@
+phpunit programs
+-------------------------------------------------------------------------------------------
+First Program (Simple phpunit program)
+############################################################################################
+<?php
+class DummyTest extends PHPUnit_Framework_TestCase
+{
+		public function testTrueIsTrue()
+	{
+		$foo = true;
+		$this->assertTrue($foo);
+	}
+
+}
+?>
+############################################################################################
+Output:
+←[30;42mOK (1 test, 1 assertion)←[0m
+
+
+-------------------------------------------------------------------------------------------
+Second Program (Assertions) for false assertion
+############################################################################################
+<?php
+
+class DummyTest extends PHPUnit_Framework_TestCase
+{
+		public function testTrueIsTrue()
+	{
+		$foo = false;
+		$this->assertTrue($foo);
+	}
+
+}
+?>
+############################################################################################
+Output:
+There was 1 failure:
+
+1) DummyTest::testTrueIsTrue
+Failed asserting that false is true.
+############################################################################################
+
+-------------------------------------------------------------------------------------------
+Third Program (Assertions) for false assertion
+############################################################################################
+in src
+<?php
+
+class URL
+{
+    public function generateUrlSafeString($string, $separator = '-', $maxLength = 96)
+    {
+        $title = iconv('UTF-8', 'ASCII//TRANSLIT', $string);
+        $title = preg_replace("%[^-/+|\w ]%", '', $title);
+        $title = strtolower(trim(substr($title, 0, $maxLength), '-'));
+        $title = preg_replace("/[\/_|+ -]+/", $separator, $title);
+
+        return $title;
+    }
+}
+?>
+--------------------------------------------------------------------------------------------
+<?php
+
+class URLTest extends PHPUnit_Framework_TestCase
+{
+    //
+}
+?>
+############################################################################################
+output:
+There were 2 failures:
+
+1) DummyTest::testTrueIsTrue
+Failed asserting that false is true.
+
+C:\wamp\www\phpunit\test\DummyTest.php:8
+
+2) Warning
+No tests found in class "URLTest".
+←[37;41m                                     ←[0m
+←[37;41mFAILURES!                            ←[0m
+←[37;41mTests: 2, Assertions: 1, Failures: 2.←[0m
+---------------------------------------------------------------------------------------------
+creating new url test class
+<?php
+
+class URLTest extends PHPUnit_Framework_TestCase
+{
+    public function testGenerateReturnsUrlSafeString()
+    {
+        
+    }
+}
+?>
+############################################################################################
+output:
+There was 1 failure:
+
+1) DummyTest::testTrueIsTrue
+Failed asserting that false is true.
+
+C:\wamp\www\phpunit\test\DummyTest.php:8
+←[37;41m                                     ←[0m
+←[37;41mFAILURES!                            ←[0m
+←[37;41mTests: 2, Assertions: 1, Failures: 1.←[0m
+
+--------------------------------------------------------------------------------------------
+PASSED TEST CASE
+--------------------------------------------------------------------------------------------
+<?php
+
+require("/src/URL.php");
+
+class URLTest extends PHPUnit_Framework_TestCase
+{
+    public function testGenerateReturnsUrlSafeString()
+    {
+        $originalString = 'This string will be url safe';
+        $expectedResult = 'this-string-will-be-url-safe';
+
+        $url = new URL();
+
+        $result = $url->generateUrlSafeString($originalString);
+
+        $this->assertEquals($expectedResult, $result);
+    }
+	
+}
+?>
+
+############################################################################################
+Output:
+There was 1 failure:
+
+1) DummyTest::testTrueIsTrue
+Failed asserting that false is true.
+
+C:\wamp\www\phpunit\test\DummyTest.php:8
+←[37;41m                                     ←[0m
+←[37;41mFAILURES!                            ←[0m
+←[37;41mTests: 2, Assertions: 2, Failures: 1.←[0m
+
+
+############################################################################################
+--------------------------------------------------------------------------------------------
+Fourth Program (For Numbers , Special Characters,non english characters) -A proper test suite makes sure all your possible bases are covered
+--------------------------------------------------------------------------------------------
+<?php
+
+require("/src/URL.php");
+
+class URLTest extends PHPUnit_Framework_TestCase
+{
+    public function testGenerateReturnsUrlSafeString()
+    {
+        $originalString = 'This string will be url safe';
+        $expectedResult = 'this-string-will-be-url-safe';
+
+        $url = new URL();
+
+        $result = $url->generateUrlSafeString($originalString);
+
+        $this->assertEquals($expectedResult, $result);
+    }
+	public function testGenerateReturnsExpectedForStringsContainingNumbers()
+    {
+        $originalString = 'This1 string2 will3 be 44 sluggified10';
+        $expectedResult = 'this1-string2-will3-be-44-sluggified10';
+
+        $url = new URL();
+
+        $result = $url->generateUrlSafeString($originalString);
+
+        $this->assertEquals($expectedResult, $result);
+    }
+
+    public function testGenerateReturnsExpectedForStringsContainingSpecialCharacters()
+    {
+        $originalString = 'This! @string#$ %$will ()be "sluggified';
+        $expectedResult = 'this-string-will-be-sluggified';
+
+        $url = new URL();
+
+        $result = $url->generateUrlSafeString($originalString);
+
+        $this->assertEquals($expectedResult, $result);
+    }
+
+    public function testGenerateReturnsExpectedForStringsContainingNonEnglishCharacters()
+    {
+        $originalString = "Tänk efter nu – förr'n vi föser dig bort";
+        $expectedResult = 'tank-efter-nu-forrn-vi-foser-dig-bort';
+
+        $url = new URL();
+
+        $result = $url->generateUrlSafeString($originalString);
+
+        $this->assertEquals($expectedResult, $result);
+    }
+
+    public function testGenerateReturnsExpectedForEmptyStrings()
+    {
+        $originalString = '';
+        $expectedResult = '';
+
+        $url = new URL();
+
+        $result = $url->generateUrlSafeString($originalString);
+
+        $this->assertEquals($expectedResult, $result);
+    }
+}
+?>
+
+############################################################################################
+output:
+There was 1 failure:
+
+1) DummyTest::testTrueIsTrue
+Failed asserting that false is true.
+
+C:\wamp\www\phpunit\test\DummyTest.php:8
+←[37;41m                                     ←[0m
+←[37;41mFAILURES!                            ←[0m
+←[37;41mTests: 6, Assertions: 6, Failures: 1.←[0m
+
+###########################################################################################
+-------------------------------------------------------------------------------------------
+Fifth Program (Annotations == Data providers)
+-------------------------------------------------------------------------------------------
+<?php
+
+require("/src/URL.php");
+
+class URLTest extends PHPUnit_Framework_TestCase
+{
+
+	 /**
+     * @param string $originalString String to be converted
+     * @param string $expectedResult What we expect our slug result to be
+     *
+     * @dataProvider providerTestGenerateReturnsUrlSafeString
+     */
+    public function testGenerateReturnsUrlSafeString($originalString, $expectedResult)
+    {
+        $url = new URL();
+
+        $result = $url->generateUrlSafeString($originalString);
+
+        $this->assertEquals($expectedResult, $result);
+    }
+	
+	public function providerTestGenerateReturnsUrlSafeString()
+    {
+        return array(
+            array('This string will be url safe', 'this-string-will-be-url-safe'),
+            array('THIS STRING WILL BE URL SAFE', 'this-string-will-be-url-safe'),
+            array('This1 string2 will3 be 44 URL33', 'this1-string2-will3-be-44-url33'),
+            array('This! @string#$ %$will ()be "url', 'this-string-will-be-url'),
+            array("Tänk efter nu – förr'n vi föser dig bort", 'tank-efter-nu-forrn-vi-foser-dig-bort'),
+            array('', ''),
+        );
+    }
+}
+?>
+###########################################################################################
+output:
+
+There was 1 failure:
+
+1) DummyTest::testTrueIsTrue
+Failed asserting that false is true.
+
+C:\wamp\www\phpunit\test\DummyTest.php:8
+←[37;41m                                     ←[0m
+←[37;41mFAILURES!                            ←[0m
+←[37;41mTests: 7, Assertions: 7, Failures: 1.←[0m
+###########################################################################################
+-------------------------------------------------------------------------------------------
+Sixth Program (for testing private/protected methods)
+-------------------------------------------------------------------------------------------
+Src file create User.php
+<?php
+
+class User
+{
+    const MIN_PASS_LENGTH = 4;
+
+    private $user = array();
+
+    public function __construct(array $user)
+    {
+        $this->user = $user;
+    }
+
+    public function getUser()
+    {
+        return $this->user;
+    }
+
+    public function setPassword($password)
+    {
+        if (strlen($password) < self::MIN_PASS_LENGTH) {
+            return false;
+        }
+
+        $this->user['password'] = $this->cryptPassword($password);
+
+        return true;
+    }
+
+    private function cryptPassword($password)
+    {
+        return md5($password);
+    }
+}
+?>
+---------------------------------------------------------------------------------------------------
+UserTest.php
+
+<?php
+
+require("/src/User.php");
+
+class UserTestUserTest extends PHPUnit_Framework_TestCase
+{
+	  public function testSetPasswordReturnsTrueWhenPasswordSuccessfullySet()
+	{
+		$details = array();
+
+        $user = new User($details);
+		
+		$password = 'fubar';
+
+		$result = $user->setPassword($password);
+		
+		$this->assertTrue($result);
+	}
+		
+	public function testGetUserReturnsUserWithExpectedValues()
+	{
+		$details = array();
+
+		$user = new User($details);
+
+		$password = 'fubar';
+
+		$user->setPassword($password);
+
+		$expectedPasswordResult = '5185e8b8fd8a71fc80545e144f91faf2';
+
+		$currentUser = $user->getUser();
+
+		$this->assertEquals($expectedPasswordResult, $currentUser['password']);
+	}	
+}
+?>
+######################################################################################################
+output:
+C:\wamp\www\phpunit\test\DummyTest.php:8
+←[37;41m                                     ←[0m
+←[37;41mFAILURES!                            ←[0m
+←[37;41mTests: 9, Assertions: 9, Failures: 1.←[0m
+######################################################################################################
+
+crete coverage report for files
+phpunit --coverage-html coverage
+
+
+protected function tearDown()
+    {
+        echo " Running tearDown function from URLTest class\n";
+    }
+
+protected function setUp()
+    {
+        echo " Running SetUp function from URLTest class\n";
+    }
+	
+public static function setUpBeforeClass()
+    {
+         echo " Running SetUpBeforeClass function from URLTest class\n\n";
+    }
+
+public static function tearDownAfterClass()
+    {
+         echo "\n\n Running tearDownAfterClass function from URLTest class\n\n";
+    }
+	

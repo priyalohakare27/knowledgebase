@@ -1,0 +1,129 @@
+MOCK OBJECTS
+
+getMock() 
+
+
+$authorizeNet = $this->getMock('\AuthorizeNetAIM', array(), array($payment::API_ID, $payment::TRANS_KEY));
+
+
+Actual getMock Paramaters
+
+public function getMock(
+							$originalClassName,
+							$methods = array(), 
+							array $arguments = array(),
+							$mockClassName = '', 
+							$callOriginalConstructor = TRUE, 
+							$callOriginalClone = TRUE, 
+							$callAutoload = TRUE,
+							$cloneArguments = TRUE
+						);
+
+
+						
+						
+getMockBuilder()
+
+getMockBuilder().
+It is little more than a wrapper around the getMock() method above, but it provides a much more human-readable format of chained methods, making creating mocked objects a breeze.
+
+$authorizeNet = $this->getMockBuilder('\AuthorizeNetAIM')
+    ->setConstructorArgs(array($payment::API_ID, $payment::TRANS_KEY))
+    ->getMock();
+
+
+var_dump($authorizeNet);
+
+
+Output:
+class Mock_AuthorizeNetAIM_084f7b20#17 (12) {
+    private $__phpunit_invocationMocker => NULL
+    protected $_x_post_fields           => array(5) {
+        'version'        => string(3) "3.1"
+        'delim_char'     => string(1) ","
+        'delim_data'     => string(4) "TRUE"
+        'relay_response' => string(5) "FALSE"
+        'encap_char'     => string(1) "|"
+    }
+    private $_additional_line_items => array(0) {}
+    protected $_custom_fields       => array(0) {}
+    public $verify_x_fields         => bool(true)
+    private $_all_aim_fields        => array(61) {
+        [0]  => string(7) "address"
+        [1]  => string(18) "allow_partial_auth"
+        [2]  => string(6) "amount"
+        [3]  => string(9) "auth_code"
+        [4]  => string(24) "authentication_indicator"
+        [5]  => string(13) "bank_aba_code"
+        [6]  => string(14) "bank_acct_name"
+        [7]  => string(13) "bank_acct_num"
+        [8]  => string(14) "bank_acct_type"
+        [9]  => string(17) "bank_check_number"
+        [10] => string(9) "bank_name"
+        [11] => string(9) "card_code"
+        [12] => string(8) "card_num"
+        [13] => string(31) "cardholder_authentication_value"
+        [14] => string(4) "city"
+        [15] => string(7) "company"
+        [16] => string(7) "country"
+        [17] => string(7) "cust_id"
+        [18] => string(11) "customer_ip"
+        [19] => string(10) "delim_char"
+        [20] => string(10) "delim_data"
+        [21] => string(11) "description"
+        [22] => string(16) "duplicate_window"
+        [23] => string(4) "duty"
+        [24] => string(11) "echeck_type"
+        [25] => string(5) "email"
+        [26] => string(14) "email_customer"
+        [27] => string(10) "encap_char"
+        [28] => string(8) "exp_date"
+        [29] => string(3) "fax"
+        [30] => string(10) "first_name"
+        [31] => string(20) "footer_email_receipt"
+        [32] => string(7) "freight"
+        [33] => string(20) "header_email_receipt"
+        [34] => string(11) "invoice_num"
+        [35] => string(9) "last_name"
+        [36] => string(9) "line_item"
+        [37] => string(5) "login"
+        [38] => string(6) "method"
+        [39] => string(5) "phone"
+        [40] => string(6) "po_num"
+        [41] => string(17) "recurring_billing"
+        [42] => string(14) "relay_response"
+        [43] => string(15) "ship_to_address"
+        [44] => string(12) "ship_to_city"
+        [45] => string(15) "ship_to_company"
+        [46] => string(15) "ship_to_country"
+        [47] => string(18) "ship_to_first_name"
+        [48] => string(17) "ship_to_last_name"
+        [49] => string(13) "ship_to_state"
+        [50] => string(11) "ship_to_zip"
+        [51] => string(15) "split_tender_id"
+        [52] => string(5) "state"
+        [53] => string(3) "tax"
+        [54] => string(10) "tax_exempt"
+        [55] => string(12) "test_request"
+        [56] => string(8) "tran_key"
+        [57] => string(8) "trans_id"
+        [58] => string(4) "type"
+        [59] => string(7) "version"
+        [60] => string(3) "zip"
+    }
+    protected $_api_login       => int(123456)
+    protected $_transaction_key => string(15) "TRANSACTION KEY"
+    protected $_post_string     => NULL
+    public $VERIFY_PEER         => bool(true)
+    protected $_sandbox         => bool(true)
+    protected $_log_file        => bool(false)
+}
+
+
+Try dumping the output of any method call:
+
+var_dump($authorizeNet->authorizeAndCapture());
+
+The result you will get is NULL.
+
+If you try more methods, the result will always be NULL. Your mocked object’s methods all return NULL.
